@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>Bridge the Gap: Cross-Dept Dialogue</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+:root{--bg:#0b1020;--ink:#eef1ff;--muted:#a9b1d6;--line:rgba(255,255,255,.13);--glass:rgba(255,255,255,.07);--glass2:rgba(255,255,255,.12);--p1:#7c5cff;--p2:#22d3ee;--p3:#ff6bd6;--ok:#34d399;--warn:#fbbf24;--bad:#fb7185;--hud-h:170px}
+html{-webkit-text-size-adjust:100%;max-width:100%}
+body{margin:0;max-width:100%;min-height:100vh;color:var(--ink);font-family:'Segoe UI',system-ui,-apple-system,'Inter',Roboto,'Helvetica Neue',Arial,sans-serif;font-size:16px;line-height:1.55;
+background:radial-gradient(1100px 600px at 8% -10%,rgba(124,92,255,.38),transparent 60%),radial-gradient(900px 500px at 100% 0%,rgba(34,211,238,.22),transparent 55%),radial-gradient(800px 600px at 50% 120%,rgba(255,107,214,.18),transparent 60%),var(--bg);background-attachment:scroll}
+.bgfx{position:fixed;inset:0;pointer-events:none;z-index:0;background-image:radial-gradient(rgba(255,255,255,.08) 1.2px,transparent 1.3px);background-size:22px 22px;-webkit-mask-image:linear-gradient(180deg,#000 0%,transparent 90%);mask-image:linear-gradient(180deg,#000 0%,transparent 90%)}
+.shell{position:relative;z-index:1;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+main{flex:1 0 auto;width:100%}
+button{font:inherit;color:inherit}
+h1,h2,h3,p,ul{margin:0}
+:focus-visible{outline:3px solid var(--p2);outline-offset:2px}
+.app{width:100%;max-width:920px;margin:0 auto;padding:14px 16px 8px}
+.screen{display:none}
+.screen.active{display:block;animation:enter .45s ease both}
+.screen.leaving{animation:leave .2s ease forwards}
+.anim-in{animation:enter .5s ease both}
+@keyframes enter{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes leave{to{opacity:0;transform:translateY(-8px)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes pop{0%{transform:scale(.85)}60%{transform:scale(1.07)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+@keyframes toastIn{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:none}}
+@keyframes pulseLow{0%,100%{box-shadow:0 0 0 0 rgba(251,113,133,0)}50%{box-shadow:0 0 0 4px rgba(251,113,133,.25)}}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.2px;min-width:0}
+.brand-dot{flex:0 0 14px;width:14px;height:14px;border-radius:50%;background:linear-gradient(135deg,var(--p1),var(--p2));box-shadow:0 0 14px rgba(124,92,255,.8)}
+.icon-btn{flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:var(--glass2);cursor:pointer;line-height:1;transition:transform .15s,background .2s}
+.icon-btn:hover{background:rgba(255,255,255,.18);transform:translateY(-1px)}
+.icon-btn .mi{font-size:17px}
+.icon-btn .ml{font-size:13px;font-weight:600}
+.card{background:var(--glass);border:1px solid var(--line);border-radius:22px;padding:20px;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 12px 40px rgba(0,0,0,.28);margin-bottom:16px;overflow-wrap:anywhere}
+.card h3{font-size:18px;margin-bottom:12px}
+.kicker{display:inline-block;padding:6px 12px;border-radius:999px;background:rgba(124,92,255,.2);border:1px solid rgba(124,92,255,.5);color:#d9d0ff;font-size:12.5px;font-weight:600;margin-bottom:12px}
+.title{font-size:clamp(32px,7vw,52px);line-height:1.05;font-weight:800;background:linear-gradient(90deg,#b7a4ff,#22d3ee 55%,#ff9de6);-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:14px}
+.title small{display:block;font-size:.5em;font-weight:700;margin-top:6px;letter-spacing:.3px}
+.hook{margin:0 0 14px;padding:14px 16px;border-left:4px solid var(--p3);background:rgba(255,107,214,.09);border-radius:0 14px 14px 0;font-size:clamp(16px,2.6vw,19px);font-weight:600;line-height:1.5}
+.why{color:var(--muted);margin-bottom:14px}
+.benefits{list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.benefits li{padding:7px 12px;border-radius:999px;background:var(--glass2);border:1px solid var(--line);font-size:13.5px}
+.hero-art{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:12px}
+.hero-art .av{width:clamp(84px,22vw,120px);flex:0 0 auto}
+.hero-art .gap-bridge{flex:1 1 60px;max-width:200px;min-width:50px;height:10px;border-radius:99px;background:repeating-linear-gradient(90deg,var(--p2) 0 10px,transparent 10px 18px);opacity:.8;position:relative}
+.hero-art .gap-bridge span{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:22px;background:#161c3a;border-radius:50%;padding:4px 7px;border:1px solid var(--line)}
+.field label{display:block;font-weight:700;margin-bottom:6px}
+.field input{width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid var(--line);background:rgba(8,12,28,.6);color:var(--ink);font:inherit;font-size:16px}
+.field input:focus{border-color:var(--p2);outline:none;box-shadow:0 0 0 4px rgba(34,211,238,.18)}
+.field.bad input{border-color:var(--bad)}
+.err{min-height:20px;margin:6px 0 12px;color:#fda4af;font-size:13.5px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 22px;border-radius:16px;border:1px solid var(--line);background:var(--glass2);font-weight:700;cursor:pointer;transition:transform .15s,box-shadow .2s,filter .2s;text-align:center;line-height:1.3}
+.btn:hover{transform:translateY(-2px)}
+.btn.primary{border:none;color:#fff;background:linear-gradient(135deg,#7c5cff 0%,#b05cff 52%,#ff6bd6 100%);box-shadow:0 10px 28px rgba(124,92,255,.45)}
+.btn.primary:hover{filter:brightness(1.08);box-shadow:0 14px 34px rgba(176,92,255,.55)}
+.btn.block{width:100%}
+.btn-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.mini{padding:14px;border-radius:16px;background:var(--glass);border:1px solid var(--line);min-width:0}
+.mini .ic{font-size:26px;display:block;margin-bottom:6px}
+.mini strong{display:block;margin-bottom:4px}
+.mini span.d{color:var(--muted);font-size:14px}
+.pts-row{display:flex;flex-direction:column;gap:8px}
+.pts-row div{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:12px;background:var(--glass);border:1px solid var(--line)}
+.pts-row b{flex:0 0 64px}
+.story{color:var(--muted)}
+.story strong{color:var(--ink)}
+
+/* HUD */
+.hud{position:sticky;top:0;z-index:40;padding:8px 0 6px;background:linear-gradient(180deg,rgba(11,16,32,.95) 70%,rgba(11,16,32,0))}
+.hud-inner{border:1px solid var(--line);border-radius:18px;background:rgba(18,24,54,.82);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);padding:10px 12px;box-shadow:0 8px 28px rgba(0,0,0,.35)}
+.hud-row{display:flex;align-items:center;gap:10px}
+.hud-player{flex:1 1 auto;min-width:0}
+.hud-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);line-height:1.2}
+.hud-name{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25}
+.hud-score{flex:0 0 auto;text-align:right}
+.hud-scorenum{font-size:22px;font-weight:800;line-height:1.1;background:linear-gradient(90deg,#fde68a,#fbbf24);-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block}
+.hud-scorenum.bump{animation:pop .5s}
+.progress-wrap{margin:8px 0}
+.progress-top{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px}
+.progress{height:10px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden}
+.progress-fill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--p1),var(--p2),var(--ok));transition:width .8s cubic-bezier(.4,.1,.2,1)}
+.meters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.meter{min-width:0;padding:6px 8px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line)}
+.meter-head{display:flex;align-items:center;justify-content:space-between;gap:4px}
+.m-ic{font-size:15px;line-height:1}
+.m-val{font-weight:800;font-size:14px;font-variant-numeric:tabular-nums}
+.m-name{font-size:10.5px;color:var(--muted);line-height:1.2;margin:2px 0 4px;min-height:25px;display:block}
+.bar{height:8px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden}
+.bar-fill{height:100%;width:50%;border-radius:99px;transition:width .7s cubic-bezier(.4,.1,.2,1)}
+.meter[data-m=trust] .bar-fill{background:linear-gradient(90deg,#22d3ee,#34d399)}
+.meter[data-m=clarity] .bar-fill{background:linear-gradient(90deg,#7c5cff,#60a5fa)}
+.meter[data-m=calm] .bar-fill{background:linear-gradient(90deg,#ff6bd6,#fb923c)}
+.meter.low{border-color:rgba(251,113,133,.6);animation:pulseLow 1.6s infinite}
+.meter.low .bar-fill{background:linear-gradient(90deg,#fb7185,#f43f5e)}
+.badge-strip{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 14px}
+.bchip{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;font-size:12.5px;border:1px dashed var(--line);opacity:.5;filter:grayscale(1);background:var(--glass)}
+.bchip.on{opacity:1;filter:none;border-style:solid;border-color:rgba(251,191,36,.65);background:rgba(251,191,36,.13)}
+
+/* Scenario */
+.chapter-card{text-align:center;padding:30px 20px}
+.chapter-card .big{font-size:56px;line-height:1;margin-bottom:8px}
+.chapter-card .ch-no{display:inline-block;padding:5px 14px;border-radius:999px;background:rgba(34,211,238,.15);border:1px solid rgba(34,211,238,.4);color:#a5f3fc;font-weight:700;font-size:13px;margin-bottom:10px}
+.chapter-card h2{font-size:clamp(24px,5vw,34px);margin-bottom:10px}
+.chapter-card p{color:var(--muted);max-width:560px;margin:0 auto 14px}
+.focus-tags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:18px}
+.sc-meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.pill{padding:5px 11px;border-radius:999px;font-size:12px;font-weight:600;background:var(--glass2);border:1px solid var(--line)}
+.pill-ch{background:rgba(124,92,255,.25);border-color:rgba(124,92,255,.6)}
+.pill-tag{background:rgba(34,211,238,.15);border-color:rgba(34,211,238,.4);color:#a5f3fc}
+.sc-title{font-size:clamp(21px,4.4vw,28px);line-height:1.2;margin-bottom:10px}
+.narr{color:#cfd5f5;margin-bottom:14px}
+.narr strong,.bubble strong{color:#fff}
+.beats{display:flex;flex-direction:column;gap:12px;margin-bottom:14px}
+.beat{display:flex;align-items:flex-start;gap:14px}
+.beat .av{flex:0 0 clamp(78px,20vw,108px);width:clamp(78px,20vw,108px);border-radius:20px;padding:4px;background:linear-gradient(160deg,rgba(124,92,255,.35),rgba(34,211,238,.18));border:1px solid var(--line)}
+.beat .av svg{display:block;width:100%;height:auto;animation:bob 3.4s ease-in-out infinite}
+.beat.react .av{animation:pop .55s}
+.beat-body{flex:1 1 auto;min-width:0}
+.who{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline;margin-bottom:5px}
+.who .role{font-size:12px;color:var(--muted)}
+.bubble{padding:12px 14px;border-radius:6px 18px 18px 18px;background:rgba(255,255,255,.1);border:1px solid var(--line);line-height:1.55}
+.beat.me .bubble{background:rgba(124,92,255,.2)}
+.tags-nv{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-top:8px}
+.nv,.pv{display:inline-block;padding:5px 10px;border-radius:10px;font-size:12.5px;line-height:1.4}
+.nv{background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.35);color:#a5f3fc}
+.pv{background:rgba(255,107,214,.12);border:1px solid rgba(255,107,214,.35);color:#ffc2ef}
+.hint-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:14px;border:1px solid rgba(251,191,36,.55);background:rgba(251,191,36,.12);color:#fde68a;font-weight:700;cursor:pointer;margin-bottom:10px}
+.hint-btn:hover{background:rgba(251,191,36,.2)}
+.hint-box{padding:14px 16px;border-radius:14px;border:1px solid rgba(251,191,36,.4);background:rgba(251,191,36,.08);color:#fff3c4;margin-bottom:14px;animation:enter .35s ease both}
+.hint-box[hidden]{display:none}
+.ask{font-size:18px;margin:6px 0 10px}
+.choices{display:flex;flex-direction:column;gap:10px}
+.choice{display:flex;align-items:flex-start;gap:12px;width:100%;padding:14px;border-radius:16px;border:1.5px solid var(--line);background:var(--glass);text-align:left;cursor:pointer;transition:transform .15s,border-color .2s,background .2s,opacity .3s}
+.choice:hover:not(:disabled){transform:translateY(-2px);border-color:var(--p2);background:rgba(34,211,238,.08)}
+.choice:disabled{cursor:default}
+.choice .ltr{flex:0 0 32px;height:32px;border-radius:10px;display:grid;place-items:center;font-weight:800;background:linear-gradient(135deg,var(--p1),var(--p3))}
+.choice .ctext{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:8px}
+.choice .ct{line-height:1.55}
+.reveal{display:none}
+.choices.revealed .reveal{display:block}
+.rv{display:inline-block;padding:4px 10px;border-radius:99px;font-size:12px;font-weight:700}
+.rv-ok{background:rgba(52,211,153,.18);color:#6ee7b7}
+.rv-meh{background:rgba(251,191,36,.18);color:#fde68a}
+.rv-bad{background:rgba(251,113,133,.18);color:#fda4af}
+.choice.sel-ok{border-color:var(--ok);background:rgba(52,211,153,.12)}
+.choice.sel-meh{border-color:var(--warn);background:rgba(251,191,36,.1)}
+.choice.sel-bad{border-color:var(--bad);background:rgba(251,113,133,.1)}
+.choice.dim{opacity:.55}
+.scenario.shake{animation:shake .5s}
+#reaction{scroll-margin-top:calc(var(--hud-h) + 12px)}
+.rx{margin-top:18px;padding-top:16px;border-top:1px dashed var(--line)}
+.rx-title{font-size:17px;margin-bottom:12px}
+.feedback{padding:16px;border-radius:16px;border:1px solid var(--line);margin-bottom:14px}
+.fb-ok{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.5)}
+.fb-meh{background:rgba(251,191,36,.09);border-color:rgba(251,191,36,.5)}
+.fb-bad{background:rgba(251,113,133,.09);border-color:rgba(251,113,133,.5)}
+.fb-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 12px;font-weight:800;margin-bottom:4px}
+.fb-style{font-size:13.5px;color:var(--muted);margin-bottom:8px}
+.fb-why,.fb-opt{margin-bottom:10px}
+.fb-opt{padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.06)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.tag{padding:4px 10px;border-radius:99px;font-size:12px;background:rgba(124,92,255,.22);border:1px solid rgba(124,92,255,.5);color:#ddd6fe}
+.deltas{display:flex;flex-wrap:wrap;gap:6px}
+.dchip{padding:4px 10px;border-radius:99px;font-size:12px;font-weight:700;background:var(--glass2)}
+.dchip.up{color:#6ee7b7;background:rgba(52,211,153,.14)}
+.dchip.down{color:#fda4af;background:rgba(251,113,133,.14)}
+.dtag{display:inline-block;padding:0 7px;margin:0 2px;border-radius:6px;background:rgba(34,211,238,.22);color:#a5f3fc;font-size:11.5px;font-weight:800;vertical-align:1px}
+.next-row{display:flex;justify-content:flex-end}
+
+/* Debrief */
+.ending{text-align:center}
+.ending.A{border-color:rgba(52,211,153,.55)}
+.ending.B{border-color:rgba(251,191,36,.55)}
+.ending.C{border-color:rgba(251,113,133,.55)}
+.end-faces{display:flex;justify-content:center;gap:8px;margin-bottom:10px}
+.end-faces .av{width:clamp(70px,20vw,100px);flex:0 0 auto}
+.end-faces svg{display:block;width:100%;height:auto}
+.end-kicker{color:var(--muted);font-size:14px}
+.end-title{font-size:clamp(24px,5vw,34px);margin:6px 0 10px}
+.end-text{color:#cfd5f5;max-width:640px;margin:0 auto 16px}
+.stat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.stat{padding:12px 8px;border-radius:14px;background:var(--glass);border:1px solid var(--line);min-width:0}
+.stat b{display:block;font-size:clamp(18px,4.5vw,26px);line-height:1.2}
+.stat span{font-size:12px;color:var(--muted)}
+.final-meters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;text-align:left}
+.comp{padding:14px;border-radius:16px;background:var(--glass);border:1px solid var(--line);min-width:0}
+.comp-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.comp-top .ic{font-size:24px;flex:0 0 auto}
+.comp-top strong{line-height:1.3;min-width:0}
+.comp-val{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;margin-bottom:6px;color:var(--muted)}
+.comp-val b{color:var(--ink);font-size:16px}
+.comp .bar-fill{background:linear-gradient(90deg,var(--p1),var(--p2))}
+.comp .tip{margin-top:8px;font-size:13px;color:var(--muted)}
+.bgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.bcard{display:flex;gap:10px;align-items:flex-start;padding:12px;border-radius:14px;background:var(--glass);border:1px dashed var(--line);opacity:.5;filter:grayscale(1);min-width:0}
+.bcard.on{opacity:1;filter:none;border:1px solid rgba(251,191,36,.6);background:rgba(251,191,36,.1)}
+.bcard .ic{font-size:26px;flex:0 0 auto}
+.bcard small{display:block;color:var(--muted);line-height:1.4}
+.rv-item{border:1px solid var(--line);border-radius:14px;background:var(--glass);margin-bottom:10px;overflow:hidden}
+.rv-item summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;padding:12px 14px}
+.rv-item summary::-webkit-details-marker{display:none}
+.rv-n{flex:0 0 28px;height:28px;border-radius:9px;display:grid;place-items:center;font-weight:800;background:linear-gradient(135deg,var(--p1),var(--p3))}
+.rv-t{flex:1 1 160px;min-width:0;font-weight:700}
+.rv-s{padding:4px 10px;border-radius:99px;font-size:12px;font-weight:700}
+.st-ok{background:rgba(52,211,153,.18);color:#6ee7b7}
+.st-no{background:rgba(251,191,36,.18);color:#fde68a}
+.chev{transition:transform .2s;color:var(--muted)}
+.rv-item[open] .chev{transform:rotate(180deg)}
+.rv-body{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px}
+.rv-box{padding:12px;border-radius:12px;background:rgba(255,255,255,.06);font-size:14.5px}
+.rv-box h4{margin:0 0 4px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.rv-box.best{border:1px solid rgba(52,211,153,.5);background:rgba(52,211,153,.08)}
+.reinforce p{margin-bottom:14px;color:#dfe4ff}
+.copy-status{min-height:22px;margin-top:10px;font-size:14px;color:#6ee7b7}
+.lms-box{width:100%;min-height:150px;margin-top:8px;padding:12px;border-radius:12px;border:1px solid var(--line);background:rgba(8,12,28,.6);color:var(--ink);font:13px/1.5 ui-monospace,Consolas,monospace;resize:vertical}
+.footer{flex:0 0 auto;text-align:center;padding:20px 16px 26px;color:var(--muted);font-size:13px;border-top:1px solid var(--line);margin-top:20px;background:rgba(8,12,28,.5)}
+.toasts{position:fixed;left:0;right:0;bottom:14px;display:flex;flex-direction:column;align-items:center;gap:8px;z-index:100;pointer-events:none;padding:0 14px}
+.toast{display:flex;align-items:center;gap:12px;width:100%;max-width:420px;padding:12px 14px;border-radius:16px;background:rgba(20,26,56,.96);border:1px solid rgba(251,191,36,.7);box-shadow:0 12px 36px rgba(0,0,0,.5);animation:toastIn .45s ease both}
+.toast .ti{font-size:30px;flex:0 0 auto}
+.toast b{display:block;color:#fde68a}
+.toast span{font-size:13.5px;color:var(--muted)}
+.toast.out{opacity:0;transform:translateY(14px);transition:all .4s}
+@media (max-width:640px){
+  .grid2,.bgrid{grid-template-columns:1fr}
+  .grid3{grid-template-columns:1fr}
+  .card{padding:16px;border-radius:18px}
+  .icon-btn .ml{display:none}
+  .icon-btn{padding:9px 12px}
+}
+@media (max-width:480px){
+  .app{padding:10px 12px 6px}
+  .beat{gap:10px}
+  .m-name{font-size:10px}
+  .meter{padding:6px}
+  .hud-inner{padding:8px 10px}
+  .final-meters{grid-template-columns:1fr}
+  .stat-grid{gap:6px}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="bgfx" aria-hidden="true"></div>
+<div class="shell">
+<main>
+
+<!-- ============ GATEWAY ============ -->
+<section class="screen active" id="scr-gateway">
+ <div class="app">
+  <div class="topbar">
+   <div class="brand"><span class="brand-dot"></span>Bridge the Gap</div>
+   <button type="button" class="icon-btn" data-mute aria-pressed="false" aria-label="Matikan musik latar"><span class="mi">🔊</span><span class="ml">Musik</span></button>
+  </div>
+  <div class="card hero">
+   <div class="hero-art" id="heroArt"></div>
+   <span class="kicker">Simulasi Interaktif · Komunikasi Lintas Departemen</span>
+   <h1 class="title">Bridge the Gap<small>Cross-Dept Dialogue</small></h1>
+   <blockquote class="hook">“Satu nada bicara yang keliru bisa membekukan seluruh ruang rapat—atau justru membuka solusi yang menyelamatkan proyek.”</blockquote>
+   <p class="why">Pemimpin yang reaktif memberi instruksi, lalu heran mengapa tim mendadak diam. Pemimpin yang berpengaruh sadar bahwa setiap kata, nada, dan ekspresi adalah pesan, lalu memilih respons yang membuat orang lain berani bicara. Dalam 5 keputusan genting, kamu akan menguji seberapa jauh jembatan komunikasimu bisa dibangun.</p>
+   <ul class="benefits">
+    <li>📈 Produktivitas &amp; kinerja tim</li>
+    <li>🤝 Kualitas hubungan interpersonal</li>
+    <li>🔥 Motivasi &amp; semangat kerja</li>
+   </ul>
+   <form id="nameForm" novalidate>
+    <div class="field" id="nameField">
+     <label for="nameInput">Nama Peserta</label>
+     <input id="nameInput" type="text" maxlength="30" autocomplete="name" placeholder="Ketik nama lengkapmu" aria-describedby="nameErr" required>
+    </div>
+    <div class="err" id="nameErr" role="alert"></div>
+    <button type="submit" class="btn primary block">Lanjut ke Briefing Misi ➜</button>
+   </form>
+  </div>
+ </div>
+</section>
+
+<!-- ============ BRIEFING ============ -->
+<section class="screen" id="scr-brief">
+ <div class="app">
+  <div class="topbar">
+   <div class="brand"><span class="brand-dot"></span>Briefing Misi</div>
+   <button type="button" class="icon-btn" data-mute aria-pressed="false" aria-label="Matikan musik latar"><span class="mi">🔊</span><span class="ml">Musik</span></button>
+  </div>
+  <div class="card">
+   <span class="kicker">Selamat datang, <span id="briefName"></span>!</span>
+   <h3>🎯 Misimu</h3>
+   <p class="story">Kamu adalah <strong>Koordinator Proyek Lintas Departemen</strong> untuk peluncuran layanan <strong>pengiriman ekspres “NusaFlow”</strong> yang tinggal <strong>5 hari lagi</strong>. Kamu harus menyelaraskan Operasional (Pak Bram), Data &amp; Pelaporan (Sinta), dan Tim Lapangan (Dimas) lewat <strong>5 keputusan komunikasi</strong> di <strong>4 bab</strong>. Setiap pilihan mengubah reaksi orang lain, kondisi timmu, dan akhir ceritanya.</p>
+  </div>
+  <div class="card">
+   <h3>📚 4 Tujuan Pembelajaran</h3>
+   <div class="grid2">
+    <div class="mini"><span class="ic">🤝</span><strong>Kolaborasi Lintas Departemen</strong><span class="d">Membangun komunikasi lintas departemen yang terbuka, proaktif, dan kolaboratif.</span></div>
+    <div class="mini"><span class="ic">🧠</span><strong>Regulasi Emosi</strong><span class="d">Mengelola emosi agar tetap profesional dan objektif saat berkoordinasi.</span></div>
+    <div class="mini"><span class="ic">👀</span><strong>Kesadaran Nonverbal Pemimpin</strong><span class="d">Memahami dampak ekspresi nonverbal dan regulasi emosi pemimpin terhadap kenyamanan tim menyampaikan pendapat.</span></div>
+    <div class="mini"><span class="ic">💬</span><strong>Komunikasi Empatik &amp; Ruang Aman</strong><span class="d">Menerapkan komunikasi empatik dan diskusi dua arah yang aman agar tim berani menyampaikan kendala atau ide.</span></div>
+   </div>
+  </div>
+  <div class="card">
+   <h3>📊 3 Meter Dinamis</h3>
+   <div class="grid3">
+    <div class="mini"><span class="ic">🛡️</span><strong>Trust &amp; Safety</strong><span class="d">Kepercayaan &amp; keamanan psikologis tim untuk berbicara jujur.</span></div>
+    <div class="mini"><span class="ic">🎯</span><strong>Clarity &amp; Alignment</strong><span class="d">Kejelasan pesan &amp; keselarasan peran antar departemen.</span></div>
+    <div class="mini"><span class="ic">🧘</span><strong>Emotional Composure</strong><span class="d">Ketenangan &amp; kematangan emosimu di bawah tekanan.</span></div>
+   </div>
+   <p class="story" style="margin-top:10px">Semua meter dimulai dari 50. Jaga agar tidak ada yang jatuh di bawah 35 (bar berkedip merah) dan seimbang untuk ending terbaik.</p>
+  </div>
+  <div class="card">
+   <h3>⭐ Sistem Poin</h3>
+   <div class="pts-row">
+    <div><b style="color:#6ee7b7">+200</b><span>Optimal: asertif &amp; empatik (tegas pada pesan, hangat pada hubungan).</span></div>
+    <div><b style="color:#fde68a">+100</b><span>Parsial: pasif / menghindar. Hubungan aman, pesan kurang tegas.</span></div>
+    <div><b style="color:#fda4af">+0</b><span>Kontraproduktif: agresif / dominan.</span></div>
+   </div>
+   <p class="story" style="margin-top:10px">Skor maksimal <strong>1000</strong>. Target tuntas: <strong>≥ 80% (800 poin)</strong>.</p>
+  </div>
+  <div class="card">
+   <h3>💡 Hint &amp; 🏅 Lencana</h3>
+   <p class="story">Tombol <strong>💡 Hint Teori</strong> di tiap skenario memberi petunjuk konsep tanpa membocorkan jawaban. Buka kapan pun kamu ragu. Raih 5 lencana: 🌉 Bridge Builder, 🧘 Zen Regulator, 👂 Empathy Listener, 🛡️ Safe Space Host, dan 🏆 Assertive Master. Musik latar bisa dimatikan lewat tombol 🔊 di pojok atas.</p>
+  </div>
+  <button type="button" class="btn primary block" id="btnStart">Saya Siap Memulai Misi Koordinasi 🚀</button>
+ </div>
+</section>
+
+<!-- ============ GAME ============ -->
+<section class="screen" id="scr-game">
+ <div class="app">
+  <div class="hud" id="hud">
+   <div class="hud-inner">
+    <div class="hud-row">
+     <div class="hud-player"><div class="hud-label">Peserta</div><div class="hud-name" id="hudName">-</div></div>
+     <div class="hud-score"><div class="hud-label">Skor</div><div class="hud-scorenum" id="hudScore">0</div></div>
+     <button type="button" class="icon-btn" data-mute aria-pressed="false" aria-label="Matikan musik latar"><span class="mi">🔊</span><span class="ml">Musik</span></button>
+    </div>
+    <div class="progress-wrap">
+     <div class="progress-top"><span>Progres Misi</span><span id="progPct">0%</span></div>
+     <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progBar"><div class="progress-fill" id="progFill"></div></div>
+    </div>
+    <div class="meters">
+     <div class="meter" data-m="trust"><div class="meter-head"><span class="m-ic">🛡️</span><span class="m-val">50</span></div><span class="m-name">Trust &amp; Safety</span><div class="bar"><div class="bar-fill"></div></div></div>
+     <div class="meter" data-m="clarity"><div class="meter-head"><span class="m-ic">🎯</span><span class="m-val">50</span></div><span class="m-name">Clarity &amp; Alignment</span><div class="bar"><div class="bar-fill"></div></div></div>
+     <div class="meter" data-m="calm"><div class="meter-head"><span class="m-ic">🧘</span><span class="m-val">50</span></div><span class="m-name">Emotional Composure</span><div class="bar"><div class="bar-fill"></div></div></div>
+    </div>
+   </div>
+  </div>
+  <div class="badge-strip" id="badgeStrip" aria-label="Koleksi lencana"></div>
+  <div id="stage"></div>
+ </div>
+</section>
+
+<!-- ============ DEBRIEF ============ -->
+<section class="screen" id="scr-debrief"></section>
+
+</main>
+<footer class="footer">Education &amp; Training Dept. © 2026</footer>
+</div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<noscript><p style="padding:20px;text-align:center">Game ini membutuhkan JavaScript aktif.</p></noscript>
+
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var esc=function(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+var clamp=function(v,a,b){return Math.max(a,Math.min(b,v))};
+var shuffle=function(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a};
+
+/* ================= STATE ================= */
+var S={name:'',idx:0,score:0,shownScore:0,meters:{trust:50,clarity:50,calm:50},answers:[],order:[],badges:new Set(),hints:0,locked:false};
+function resetState(){var n=S.name;S.score=0;S.shownScore=0;S.meters={trust:50,clarity:50,calm:50};S.answers=[];S.order=[];S.badges=new Set();S.hints=0;S.idx=0;S.locked=false;S.name=n}
+var fmt=function(t){return String(t).replace(/\{nama\}/g,esc(S.name)).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\[\[(\w+)\]\]/g,'<span class="dtag">$1</span>')};
+
+/* ================= DATA ================= */
+var CH={
+ me:{name:'Kamu',role:'Koordinator Proyek',skin:'#f1c9a5',hair:'#2b2140',shirt:'#6c5ce7',style:'short'},
+ bram:{name:'Pak Bram',role:'Kepala Operasional',skin:'#d9a273',hair:'#1f1f2b',shirt:'#2d3a8c',style:'short'},
+ sinta:{name:'Sinta',role:'Analis Data & Pelaporan',skin:'#f4cfae',hair:'#3b2a24',shirt:'#d6336c',style:'long'},
+ dimas:{name:'Dimas',role:'Tim Lapangan (Junior)',skin:'#c98f5e',hair:'#15151c',shirt:'#0ca678',style:'short'}
+};
+var CHAPTERS={
+ 1:{ic:'🌉',title:'Sinkronisasi Lintas Departemen',scen:'Skenario 1 & 2',sub:'Arahan berubah dan laporan terlambat. Bangun komunikasi terbuka, proaktif, dan asertif tanpa menyalahkan orangnya.',focus:['Kolaborasi lintas departemen','Asertif & Metode DESC']},
+ 2:{ic:'🧘',title:'Regulasi Emosi & Kejelasan Pesan',scen:'Skenario 3',sub:'Rapat memanas dan lawan bicara defensif. Kenali reaksi tubuhmu, jeda sebelum bereaksi, dan tetap objektif.',focus:['Self-Awareness','Fight or flight']},
+ 3:{ic:'👀',title:'Sinyal Sunyi di Ruang Rapat',scen:'Skenario 4',sub:'Diam pun berbicara. Baca bahasa tubuh timmu dan sadari ekspresimu sendiri sebagai pemimpin.',focus:['Nonverbal pemimpin','Pendengar empatik']},
+ 4:{ic:'🤝',title:'Penyelarasan & Komitmen Bersama',scen:'Skenario 5',sub:'Tutup rapat dengan ruang diskusi dua arah, peran yang jelas, dan komitmen win-win.',focus:['Diskusi dua arah','Komitmen win-win']}
+};
+var CH_START=[0,2,3,4];
+var MET={trust:['🛡️','Trust & Safety'],clarity:['🎯','Clarity & Alignment'],calm:['🧘','Emotional Composure']};
+
+var SCEN=[
+{ch:1,tag:'Lintas Departemen',title:'Arahan yang Berubah di Menit Terakhir',
+ narr:'Proyek **peluncuran “NusaFlow”** tinggal 5 hari lagi. Kamu dipanggil Pak Bram dari Operasional. Kemarin ia meminta rute Jawa diprioritaskan. Pagi ini, tanpa penjelasan apa pun, arahan itu berbalik arah.',
+ beats:[{who:'bram',expr:'tense',say:'“Ubah urutannya! Rute Sumatra duluan, Jawa belakangan. Pokoknya hari ini harus jalan. Masa gitu aja nggak paham?”',nv:'Berdiri dengan tangan berkacak pinggang, rahang mengeras',pv:'Nada tinggi dan bicara sangat cepat'}],
+ hint:'Ingat model Lasswell: **siapa** berkata **apa**, lewat **saluran** apa, kepada **siapa**, dengan **efek** apa. Tanyakan pada dirimu: efek apa yang ingin kamu hasilkan pada Pak Bram? Langkah praktis asertif: mulai dari hal positif, pakai data konkret, ajak diskusi win-win, dan fokus pada masalah, bukan pada orangnya.',
+ best:'Mulai dari hal positif, bawa data konkret, fokus pada masalah (bukan orangnya), lalu ajak sepakati solusi win-win.',
+ choices:[
+ {pts:200,style:'Asertif & Kolaboratif',
+  text:'“Terima kasih arahannya, Pak, saya paham ada urgensi di Sumatra. Supaya kita sama-sama aman, saya bawa data kesiapan: armada Sumatra baru siap 40%, sedangkan Jawa sudah 90%. Boleh kita lihat angkanya bersama dan sepakati urutan yang paling menjamin target Senin?”',
+  fx:{trust:10,clarity:15,calm:5},
+  react:[{who:'bram',expr:'attentive',say:'“Hmm… 40% ya? Oke, coba tunjukkan datanya. Mungkin kemarin saya kurang jelas menyampaikan. Ayo kita cari urutan yang paling masuk akal.”',nv:'Menurunkan tangan dari pinggang, mencondongkan badan ke layar',pv:'Nada melunak, tempo bicara melambat'}],
+  why:'Kamu memulai dari hal positif (menghargai urgensi), membawa **data konkret**, fokus pada **masalah, bukan orangnya**, lalu mengajak solusi win-win. Inilah komunikasi asertif: **tegas pada pesan, hangat pada hubungan**. Efek pesanmu (Lasswell) adalah Pak Bram terbuka berdiskusi, bukan bertahan.',
+  tags:['Lasswell','Asertif','Win-win']},
+ {pts:100,style:'Pasif / Menghindar',
+  text:'“Baik, Pak. Kami ikuti saja, Sumatra duluan. Nanti saya sampaikan ke tim.”',
+  fx:{trust:0,clarity:-12,calm:3},
+  react:[{who:'bram',expr:'neutral',say:'“Bagus. Jangan kelamaan, ya.”',nv:'Mengangguk singkat lalu langsung membuka ponsel',pv:'Datar dan singkat'}],
+  why:'Hubungan aman, tetapi kamu **menekan pendapat sendiri** dan tidak mengklarifikasi alasan perubahan. Instruksi berubah-ubah tanpa kejelasan adalah hambatan komunikasi (Kouzes & Posner): tim menerima arahan yang kabur dan risiko salah eksekusi naik. Poin parsial karena relasi tetap terjaga.',
+  tags:['Pasif','Hambatan: instruksi berubah','Clarity']},
+ {pts:0,style:'Agresif / Menyalahkan',
+  text:'“Pak, kemarin Bapak sendiri yang minta Jawa dulu! Jangan ubah-ubah terus dong, tim saya yang jadi korban!”',
+  fx:{trust:-15,clarity:-5,calm:-10},
+  react:[{who:'bram',expr:'angry',say:'“Kamu menyalahkan saya? Saya kepala departemen di sini, bukan kamu yang atur!”',nv:'Menunjuk dengan jari, lalu berkacak pinggang',pv:'Volume naik, nada menekan'}],
+  why:'Kamu menyerang **orangnya**, bukan masalahnya. Nada tinggi memicu respons *fight or flight* pada lawan bicara, ruang partisipasi menyempit, dan data tidak pernah dibahas. Ingat: manusia bukan mesin penerima informasi (Roszak). Pesan ditafsirkan lewat akal, budi, dan perasaan.',
+  tags:['Agresif','Fight or flight','Roszak']}
+ ]},
+{ch:1,tag:'Koordinasi di Bawah Tekanan',title:'Laporan yang Terlambat',
+ narr:'Siang harinya kamu menemui **Sinta**, analis Data & Pelaporan. Laporan kesiapan rute yang dijadwalkan masuk **Rabu pukul 12.00** baru muncul Kamis sore, itu pun belum lengkap. Keputusan armada Pak Bram bergantung pada laporan ini.',
+ beats:[{who:'sinta',expr:'anxious',say:'“Eh, Kak {nama}… maaf, laporannya belum rampung. Data dari Operasional baru masuk tadi siang dan formatnya beda-beda.”',nv:'Menggenggam tablet erat, mata sering melirik ke bawah',pv:'Suara pelan dan sedikit bergetar'}],
+ hint:'Gunakan metode **DESC**: Describe (uraikan fakta objektif), Express (ungkapkan dampak/perasaan secara jujur), Specify (spesifikasikan harapan konkret), Consequences (jelaskan dampak positif/konsekuensi). Bedakan tiga gaya: agresif mendominasi, pasif memendam, asertif jelas namun menghargai.',
+ best:'Gunakan DESC lengkap: uraikan fakta, ungkapkan dampak, spesifikasikan harapan konkret, jelaskan konsekuensi positif.',
+ choices:[
+ {pts:200,style:'Asertif (DESC lengkap)',
+  text:'“Sinta, laporan kesiapan rute yang dijadwalkan Rabu 12.00 baru masuk Kamis sore dan masih setengah jadi. [[Describe]] Saya khawatir, karena Pak Bram butuh data itu untuk memutuskan armada besok pagi. [[Express]] Bisa kita sepakati draf awal masuk hari ini jam 16.00 dan versi final besok jam 09.00? Kalau data Operasional menghambat, kabari saya, kita tarik bersama. [[Specify]] Dengan begitu keputusan bisa diambil tepat waktu dan timmu tidak perlu dikejar-kejar lagi. [[Consequences]]”',
+  fx:{trust:8,clarity:15,calm:5},
+  react:[{who:'sinta',expr:'relieved',say:'“Makasih sudah ngomong jelas, Kak. Jujur memang data Operasional yang mepet. Draf jam 4 sore saya sanggupi, dan saya langsung minta bantuan menarik datanya.”',nv:'Bahu turun, napas lega, menatap lawan bicara',pv:'Suara lebih mantap dengan tempo normal'}],
+  why:'Kamu menerapkan **DESC** utuh: fakta objektif, dampak jujur, harapan konkret, lalu konsekuensi positif. Pesan **tegas**, hubungan tetap **hangat**, mewujudkan prinsip Clarity, Respect, dan Openness. Menawarkan bantuan juga menghargai kontribusi Sinta (kebutuhan penghargaan, Maslow).',
+  tags:['DESC','Asertif','Maslow']},
+ {pts:100,style:'Pasif / Menghindar',
+  text:'“Nggak apa-apa kok, Sin, santai aja. Kabari ya kalau sudah selesai.”',
+  fx:{trust:5,clarity:-15,calm:3},
+  react:[{who:'sinta',expr:'neutral',say:'“Siap, Kak. Nanti saya kabari.”',nv:'Tersenyum tipis, tetap tampak bingung soal tenggat',pv:'Nada ragu, jawaban singkat'}],
+  why:'Hangat, tetapi **tidak tegas**: tidak ada fakta, dampak, tenggat konkret, maupun konsekuensi. Gaya pasif menekan kebutuhanmu sendiri sehingga keputusan Pak Bram tetap berisiko tertunda. Hanya bagian “hangat pada hubungan” yang terpenuhi.',
+  tags:['Pasif','DESC tidak lengkap']},
+ {pts:0,style:'Agresif / Menyerang Pribadi',
+  text:'“Ini terlambat lagi! Kamu bikin seluruh proyek terancam. Kerja yang benar dong!”',
+  fx:{trust:-15,clarity:-5,calm:-8},
+  react:[{who:'sinta',expr:'withdrawn',say:'“Iya… maaf, Kak.”',nv:'Menunduk, bahu menyempit, memeluk tablet di dada',pv:'Suara mengecil hampir tak terdengar'}],
+  why:'Gaya **agresif**: menyerang pribadi (“kamu bikin…”), tanpa data, tanpa harapan konkret. Umpan balik tidak konstruktif adalah hambatan komunikasi (Kouzes & Posner). Sinta menutup diri dan cenderung menyembunyikan kendala berikutnya.',
+  tags:['Agresif','Umpan balik tidak konstruktif']}
+ ]},
+{ch:2,tag:'Regulasi Emosi',title:'Ketika Rapat Mulai Memanas',
+ narr:'Sore hari, kamu menyampaikan masukan kepada Pak Bram soal perubahan arahan. Alih-alih menerima, ia langsung membela diri di depan Sinta dan Dimas. Dadamu berdebar dan telapak tanganmu dingin. Tubuhmu bersiap untuk **fight or flight**.',
+ beats:[{who:'bram',expr:'defensive',say:'“Jadi menurutmu saya yang bikin kacau? Tim kamu saja yang lambat! Saya cuma minta hal sederhana!”',nv:'Menyilangkan lengan, tubuh bersandar ke belakang, tatapan tajam',pv:'Nada naik, kalimat dipotong-potong'}],
+ hint:'Sebelum merespons, **sadari reaksi tubuhmu** (fight or flight). Pendengar empatik menarik napas untuk menenangkan diri dan menjaga ekspresi serta postur tetap tegas namun rileks. Ingat juga: enggan mengakui kekurangan sendiri adalah hambatan komunikasi, sedangkan pesan yang efektif itu objektif dan jelas.',
+ best:'Sadari reaksi tubuh, tarik napas, jaga postur rileks, akui ketidakjelasan yang memang milikmu, lalu kembali ke fakta dan kesepakatan tertulis.',
+ choices:[
+ {pts:200,style:'Asertif & Teregulasi',
+  text:'(Menarik napas dalam, jeda 3 detik, bahu rileks) “Saya dengar kekhawatiran Bapak soal kecepatan tim, itu penting. Dan saya akui, dari sisi kami, konfirmasi prioritas kemarin belum kita pertegas secara tertulis. Bagaimana kalau hari ini kita sepakati satu arahan tertulis: urutan rute dan tenggatnya? Setuju, Pak?”',
+  fx:{trust:8,clarity:10,calm:15},
+  react:[{who:'me',expr:'calm',say:null,nv:'Postur tegak dan rileks, kontak mata stabil, suara rendah dan tenang'},{who:'bram',expr:'neutral',say:'“…Oke. Mungkin memang kemarin saya ngomongnya cuma sekilas. Kirim arahan tertulisnya, nanti saya setujui.”',nv:'Menghela napas, menurunkan lengan',pv:'Volume turun, nada lebih datar'}],
+  why:'Kamu **menyadari reaksi tubuh** sebelum bicara, mengakui ambiguitas dari sisi sendiri, dan membawa percakapan kembali ke fakta. Ekspresi dan postur tenang seorang pemimpin menular ke seluruh ruangan (“We cannot not communicate”). Hasilnya, ketenangan terjaga dan pesan tetap jelas.',
+  tags:['Self-Awareness','Fight or flight','Nonverbal']},
+ {pts:100,style:'Pasif / Mengalah',
+  text:'(Mengepalkan tangan di bawah meja, menahan kesal) “Baik, Pak. Mungkin memang kami yang kurang cepat.”',
+  fx:{trust:-5,clarity:-15,calm:5},
+  react:[{who:'me',expr:'tense',say:null,nv:'Rahang mengeras, senyum kaku, menghindari tatapan'},{who:'bram',expr:'neutral',say:'“Nah, gitu. Kerjakan saja.”',nv:'Mengangguk puas tanpa menyadari ketegangan di wajahmu',pv:'Nada datar, final'}],
+  why:'Kamu berhasil **tidak meledak** (regulasi emosi dasar), tetapi menelan pendapat dan menerima kesalahan yang bukan sepenuhnya milikmu. Ketidakjelasan arahan tidak pernah dibahas sehingga masalah yang sama berpotensi terulang. Itu pola pasif, bukan asertif.',
+  tags:['Pasif','Self-Awareness parsial']},
+ {pts:0,style:'Agresif / Reaktif',
+  text:'(Suara meninggi, menunjuk layar) “Justru Bapak yang berubah-ubah! Saya punya buktinya, mau saya tunjukkan di depan semua orang?!”',
+  fx:{trust:-15,clarity:-5,calm:-20},
+  react:[{who:'me',expr:'angry',say:null,nv:'Wajah memerah, alis menukik, jari menunjuk ke layar'},{who:'bram',expr:'angry',say:'“Cukup! Rapat selesai. Saya tidak mau bicara dengan nada begini.”',nv:'Berdiri mendadak lalu meninggalkan ruangan',pv:'Volume tinggi, nada dingin'}],
+  why:'Kamu dikuasai respons *fight*: nada tinggi, menunjuk, dan mempermalukan di depan tim. Ekspresi serta paraverbal agresif pemimpin membuat tim tidak nyaman bersuara. Pesanmu mungkin benar, tetapi **efeknya** (Lasswell) justru memutus komunikasi.',
+  tags:['Agresif','Paraverbal','Lasswell']}
+ ]},
+{ch:3,tag:'Nonverbal & Pendengar Empatik',title:'Sinyal Sunyi di Ruang Rapat',
+ narr:'Keesokan paginya kamu mengecek progres armada bersama **Dimas**, anggota tim lapangan paling junior. Jawabannya selalu singkat. Kamu merasa jengkel, dan wajahmu mulai berkerut tanpa kamu sadari.',
+ beats:[{who:'dimas',expr:'withdrawn',say:'“Aman, Kak.”',nv:'Menyilangkan tangan, menunduk, menghindari kontak mata, jari menggeser layar ponsel',pv:'Jawaban satu kata, suara pelan dan datar'}],
+ hint:'**“We cannot not communicate.”** Diam pun adalah pesan. Baca sinyal nonverbal lawan bicara, lalu sadari **ekspresi dan postur dirimu sendiri** sebagai pemimpin. Prinsip pendengar empatik: **memahami terlebih dahulu, baru dipahami**. Dengarkan tanpa memotong, jaga ekspresi dan kontak mata, postur tegas namun rileks. Ruang yang aman memenuhi kebutuhan sosial dan penghargaan tim (Maslow).',
+ best:'Atur ekspresi dan postur sendiri, beri jeda, dan pahami dulu dengan mendengarkan tanpa menghakimi.',
+ choices:[
+ {pts:200,style:'Empatik & Asertif',
+  text:'(Mengendurkan wajah, duduk sejajar, kontak mata hangat) “Terima kasih update-nya, Dim. Saya ingin benar-benar paham kondisi di lapangan. Kalau ada yang bikin kamu ragu, sekecil apa pun, saya dengarkan dulu tanpa menghakimi. Mau mulai dari bagian yang paling bikin kamu mikir?” (Lalu diam menunggu sambil mengangguk pelan)',
+  fx:{trust:20,clarity:15,calm:5},
+  react:[{who:'me',expr:'collab',say:null,nv:'Wajah rileks, senyum tipis, duduk sejajar, mengangguk pelan'},{who:'dimas',expr:'attentive',say:'“…Sebenarnya, Kak, truk Sumatra baru siap 2 dari 5. Saya takut bilang karena kemarin Pak Bram lagi marah. Takut dibilang ngeluh.”',nv:'Melepas silangan tangan, mengangkat wajah, mulai menatap',pv:'Suara masih pelan, tetapi lebih lepas dan lebih panjang'}],
+  why:'Kamu mengatur **ekspresi dan postur** sendiri, memberi ruang jeda, dan **memahami terlebih dahulu**. Dimas merasa aman sehingga menyampaikan kendala nyata. Ini memenuhi kebutuhan sosial dan penghargaan (Maslow) serta membuka komunikasi dua arah.',
+  tags:['Nonverbal','Pendengar Empatik','Maslow']},
+ {pts:100,style:'Pasif / Setengah Hadir',
+  text:'(Sambil tetap mengetik di laptop) “Oke, Dim. Kalau ada kendala, kabari ya.”',
+  fx:{trust:0,clarity:-8,calm:3},
+  react:[{who:'me',expr:'neutral',say:null,nv:'Pandangan tetap ke layar laptop, tidak ada kontak mata'},{who:'dimas',expr:'withdrawn',say:'“Siap, Kak.”',nv:'Mengangguk singkat lalu pergi, bahu tetap tegang',pv:'Datar, tanpa tambahan informasi'}],
+  why:'Niatmu terbuka, tetapi **bahasa tubuhmu** (mata di laptop) berkata sebaliknya. Verbal dan nonverbal tidak selaras sehingga yang dipercaya adalah nonverbal (Mehrabian). Kendala lapangan tetap tersembunyi.',
+  tags:['Verbal vs Nonverbal','Mehrabian']},
+ {pts:0,style:'Agresif / Dominan',
+  text:'(Dahi berkerut, menyilangkan tangan) “Jawabannya cuma ‘aman’? Saya butuh detail, jangan bikin saya menebak-nebak!”',
+  fx:{trust:-20,clarity:-5,calm:-5},
+  react:[{who:'me',expr:'tense',say:null,nv:'Dahi berkerut, lengan menyilang, nada tegas dan keras'},{who:'dimas',expr:'withdrawn',say:'“…Aman kok, Kak. Maaf.”',nv:'Mengkerut di kursi, menghindari pandangan sepenuhnya',pv:'Hampir berbisik'}],
+  why:'Ekspresi dan postur dominanmu terbaca sebagai ancaman. Tim yang merasa tidak aman akan makin diam dan kendala muncul terlambat. Hindari merasa lebih superior dan menyempitkan ruang partisipasi (Kouzes & Posner).',
+  tags:['Nonverbal pemimpin','Superioritas','Ruang aman']}
+ ]},
+{ch:4,tag:'Diskusi Dua Arah & Komitmen',title:'Menutup dengan Komitmen Bersama',
+ narr:'Rapat penyelarasan terakhir sebelum peluncuran. Pak Bram, Sinta, dan Dimas hadir. Saatnya kamu menutup dengan merangkum peran dan memastikan semua berkomitmen, padahal kamu merasa masih ada kendala lapangan yang belum terucap di forum ini.',
+ beats:[
+  {who:'bram',expr:'neutral',say:'“Oke, tinggal penutupan. Silakan {nama}, langsung saja.”',nv:'Duduk bersandar, lengan terlipat longgar',pv:'Nada datar, tempo cepat'},
+  {who:'dimas',expr:'anxious',say:null,nv:'Melirik ke Pak Bram, jemari memainkan pulpen, seperti ingin bicara'},
+  {who:'sinta',expr:'neutral',say:null,nv:'Mencatat, sesekali melirik jam'}],
+ hint:'Pemimpin yang **mendominasi percakapan** membuat ruang partisipasi menyempit dan ide tim tidak muncul. Buka ruang diskusi **dua arah** lebih dulu, baru rangkum peran dan tenggat dengan jelas (Clarity), lalu cari komitmen win-win. Ingat 3 manfaat komunikasi efektif: produktivitas, kualitas hubungan, dan motivasi tim.',
+ best:'Buka ruang dua arah dulu, baru rangkum peran dan tenggat, lalu cari komitmen win-win.',
+ choices:[
+ {pts:200,style:'Asertif & Terbuka (Dua Arah)',
+  text:'“Sebelum kita tutup, saya ingin dengar dulu: adakah kendala atau ide dari kalian yang belum sempat terucap? Setelah itu saya rangkum peran dan tenggat, lalu kita sepakati bersama.” (Menatap bergantian, mengangguk, menunggu dengan nyaman)',
+  fx:{trust:15,clarity:15,calm:5},
+  react:[
+   {who:'dimas',expr:'attentive',say:'“Kak, truk Sumatra baru 2 dari 5. Kalau tetap kirim Senin, risikonya telat.”',nv:'Mengangkat tangan, menegakkan punggung, bicara sambil menatap',pv:'Suara jelas dan mantap'},
+   {who:'bram',expr:'collab',say:'“Oh, kenapa nggak bilang dari kemarin? Ya sudah, saya pinjam 3 truk dari cabang Palembang. Sinta, tolong masukkan di laporan.”',nv:'Mengangguk, mencondongkan badan, mencatat',pv:'Nada hangat dan solutif'},
+   {who:'sinta',expr:'collab',say:'“Siap! Draf final jam 09.00, saya sertakan opsi pinjam armada.”',nv:'Tersenyum dan menandai catatannya'}],
+  why:'Kamu membuka **diskusi dua arah** sebelum menyimpulkan sehingga risiko lapangan muncul lebih awal. Peran dan tenggat dirangkum jelas dan komitmennya bersifat **win-win**. Ini menghasilkan 3 manfaat komunikasi efektif: produktivitas, hubungan yang lebih baik, dan motivasi tim.',
+  tags:['Diskusi dua arah','Win-win','3 Manfaat']},
+ {pts:100,style:'Satu Arah / Parsial',
+  text:'“Saya rangkum ya: Pak Bram urus armada, Sinta kirim laporan final, Dimas siapkan lapangan. Ada pertanyaan? … Kalau tidak ada, kita bubar. Terima kasih.”',
+  fx:{trust:-5,clarity:10,calm:3},
+  react:[
+   {who:'bram',expr:'neutral',say:'“Jelas. Bubar.”',nv:'Berdiri dan langsung membereskan berkas'},
+   {who:'dimas',expr:'anxious',say:null,nv:'Membuka mulut sebentar, lalu menutupnya kembali dan mengemasi barang'}],
+  why:'Peran dan tenggat **jelas** (Clarity), tetapi kamu hanya memberi satu detik untuk bertanya. Monolog satu arah membuat ide dan kendala tidak muncul. Komitmen tampak sepakat, padahal belum tentu semua merasa aman bersuara.',
+  tags:['Komunikasi satu arah','Clarity']},
+ {pts:0,style:'Agresif / Dominan',
+  text:'“Keputusannya sudah final dan tidak ada diskusi lagi. Tugas kalian sudah jelas, tinggal dikerjakan. Saya tidak mau dengar alasan.”',
+  fx:{trust:-20,clarity:-5,calm:-5},
+  react:[
+   {who:'bram',expr:'defensive',say:'“…Terserah.”',nv:'Menyilangkan lengan, membuang pandangan',pv:'Dingin dan datar'},
+   {who:'dimas',expr:'withdrawn',say:null,nv:'Menunduk dalam, mengurungkan niat bicara'},
+   {who:'sinta',expr:'defensive',say:null,nv:'Menutup buku catatan perlahan, wajah datar'}],
+  why:'Sikap superior dan monolog menutup ruang partisipasi sehingga tim memilih diam. Kendala lapangan tidak pernah terungkap dan komitmen hanya di permukaan. Ini hambatan komunikasi klasik (Kouzes & Posner): pemimpin yang mendominasi percakapan.',
+  tags:['Agresif / Dominan','Hambatan komunikasi']}
+ ]}
+];
+
+var OBJ=[
+ {id:'o1',ic:'🤝',title:'Kolaborasi Lintas Departemen',from:[0,1,4],tip:'Latih mulai dari hal positif, data konkret, dan ajakan solusi win-win.'},
+ {id:'o2',ic:'🧠',title:'Regulasi Emosi',from:[1,2],tip:'Latih jeda, tarik napas, dan sadari reaksi fight or flight sebelum bicara.'},
+ {id:'o3',ic:'👀',title:'Kesadaran Nonverbal Pemimpin',from:[2,3],tip:'Perhatikan ekspresi, postur, dan kontak matamu. Timmu membacanya sebelum mendengar kata-katamu.'},
+ {id:'o4',ic:'💬',title:'Komunikasi Empatik & Ruang Aman',from:[3,4],tip:'Pahami terlebih dahulu, baru dipahami. Beri ruang dua arah sebelum menyimpulkan.'}
+];
+var BADGES={
+ bridge:{ic:'🌉',name:'Bridge Builder',desc:'Menuntaskan Skenario 1–2 dengan komunikasi lintas departemen yang kuat.'},
+ zen:{ic:'🧘',name:'Zen Regulator',desc:'Menjaga Emotional Composure tetap tinggi saat rapat memanas.'},
+ empathy:{ic:'👂',name:'Empathy Listener',desc:'Membuka ruang aman sehingga tim berani bicara jujur.'},
+ safe:{ic:'🛡️',name:'Safe Space Host',desc:'Memandu diskusi dua arah dan komitmen bersama.'},
+ master:{ic:'🏆',name:'Assertive Master',desc:'Menyelesaikan 5 skenario dengan skor ≥ 80%.'}
+};
+var ENDINGS={
+ A:{ic:'🏆',title:'Ending A — Kolaborasi Solid',faces:[['bram','collab'],['me','collab'],['sinta','collab'],['dimas','relieved']],
+  text:'Peluncuran NusaFlow berjalan mulus. Pak Bram, Sinta, dan Dimas kini terbiasa menyampaikan kendala lebih awal. Risiko armada Sumatra teratasi sebelum hari H, dan energi tim melonjak. Kamu dikenal sebagai koordinator yang tegas pada pesan dan hangat pada hubungan.'},
+ B:{ic:'🌓',title:'Ending B — Kesepakatan Semu',faces:[['bram','neutral'],['me','neutral'],['sinta','neutral'],['dimas','anxious']],
+  text:'Peluncuran tetap berjalan dan rapat tampak sepakat, tetapi beberapa kendala masih tersimpan. Tim ragu bersuara dan laporan masih sering mepet. Ada risiko tersembunyi yang bisa meledak di minggu pertama. Fondasimu sudah ada, tinggal diperkuat dengan ruang dua arah yang lebih aman.'},
+ C:{ic:'🧊',title:'Ending C — Kebuntuan & Friksi',faces:[['bram','defensive'],['me','tense'],['sinta','withdrawn'],['dimas','withdrawn']],
+  text:'Komunikasi berjalan satu arah dan defensif. Departemen saling menyalahkan, kendala terlambat muncul, dan peluncuran tertunda. Kabar baiknya: pola komunikasi bisa dilatih, dan simulasi ini aman untuk mencoba lagi dengan pendekatan berbeda.'}
+};
+
+/* ================= AVATAR SVG ================= */
+function shade(hex,amt){var n=parseInt(hex.replace('#',''),16);var r=clamp((n>>16)+amt,0,255),g=clamp(((n>>8)&255)+amt,0,255),b=clamp((n&255)+amt,0,255);return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1)}
+var MOUTH={smile:'M-9 12 Q0 23 9 12',soft:'M-8 14 Q0 19 8 14',flat:'M-7 15 Q0 16.5 7 15',frown:'M-9 19 Q0 11 9 19',tight:'M-7 16 Q0 13 7 16',open:'M-8 12 Q0 27 8 12 Z',wobble:'M-8 16 Q-4 12 0 16 Q4 20 8 16'};
+var EX={
+ neutral:{b:0,by:0,m:MOUTH.flat,o:1,lx:0,ly:0,arms:'rest',tilt:0,dy:0},
+ collab:{b:-3,by:-1,m:MOUTH.smile,o:1,lx:0,ly:0,arms:'open',tilt:-2,dy:0,blush:1},
+ attentive:{b:-5,by:-3,m:MOUTH.soft,o:1,lx:0,ly:0,arms:'rest',tilt:4,dy:0},
+ tense:{b:7,by:0,m:MOUTH.tight,o:.9,lx:0,ly:0,arms:'rest',tilt:0,dy:0},
+ defensive:{b:10,by:1,m:MOUTH.frown,o:.8,lx:-1.5,ly:0,arms:'crossed',tilt:-3,dy:0},
+ angry:{b:16,by:2,m:MOUTH.open,mf:1,o:.9,lx:0,ly:0,arms:'point',tilt:0,dy:0,blush:1},
+ withdrawn:{b:-8,by:0,m:MOUTH.frown,o:.6,lx:0,ly:2.5,arms:'crossed',tilt:0,dy:6},
+ relieved:{b:-6,by:-1,m:MOUTH.smile,o:.25,lx:0,ly:0,arms:'rest',tilt:3,dy:0,blush:1},
+ anxious:{b:-10,by:-1,m:MOUTH.wobble,o:1,lx:2,ly:0,arms:'rest',tilt:0,dy:1,sweat:1},
+ calm:{b:-2,by:0,m:MOUTH.soft,o:.5,lx:0,ly:0,arms:'open',tilt:0,dy:0}
+};
+function armsSVG(a,sd,sk){
+ var st='stroke="'+sd+'" stroke-width="13" fill="none" stroke-linecap="round"';
+ var hand=function(x,y){return '<circle cx="'+x+'" cy="'+y+'" r="6" fill="'+sk+'"/>'};
+ switch(a){
+  case 'crossed':return '<path d="M24 116 Q60 128 96 116" '+st+'/><path d="M24 129 Q60 141 96 129" '+st+'/>'+hand(94,116)+hand(26,129);
+  case 'open':return '<path d="M22 112 Q12 126 12 141" '+st+'/><path d="M98 112 Q108 126 108 141" '+st+'/>'+hand(12,143)+hand(108,143);
+  case 'hip':return '<path d="M22 110 Q6 126 26 140" '+st+'/><path d="M98 110 Q114 126 94 140" '+st+'/>'+hand(26,140)+hand(94,140);
+  case 'point':return '<path d="M22 110 Q6 126 26 140" '+st+'/>'+hand(26,140)+'<path d="M98 110 Q112 108 114 92" '+st+'/>'+hand(114,90);
+  default:return '<path d="M22 112 Q15 130 20 148" '+st+'/><path d="M98 112 Q105 130 100 148" '+st+'/>';
+ }
+}
+function avatarSVG(c,ex){
+ var e=EX[ex]||EX.neutral,sk=c.skin,hr=c.hair,sh=c.shirt,sd=shade(sh,-30),skd=shade(sk,-32);
+ var back=c.style==='long'?'<path d="M31 58 Q27 18 60 18 Q93 18 89 58 L92 96 Q81 100 77 82 L43 82 Q39 100 28 96 Z" fill="'+hr+'"/>':'';
+ var front=c.style==='long'?'<path d="M33 54 Q31 24 60 23 Q89 24 87 54 Q78 38 62 38 Q44 38 33 54Z" fill="'+hr+'"/>':'<path d="M33 50 Q30 20 60 21 Q90 20 87 50 Q80 34 60 34 Q42 34 33 50Z" fill="'+hr+'"/>';
+ var by=41+e.by;
+ var eyes;
+ if(e.o<0.35){eyes='<path d="M44 51 Q50 46 56 51" stroke="#2a1b1b" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M64 51 Q70 46 76 51" stroke="#2a1b1b" stroke-width="2.4" fill="none" stroke-linecap="round"/>';}
+ else{var ry=(5.2*e.o).toFixed(2),pr=(2.6*Math.min(1,e.o+.1)).toFixed(2);
+  eyes='<ellipse cx="50" cy="51" rx="5.2" ry="'+ry+'" fill="#fff"/><ellipse cx="70" cy="51" rx="5.2" ry="'+ry+'" fill="#fff"/><ellipse cx="'+(50+e.lx)+'" cy="'+(51+e.ly)+'" rx="2.6" ry="'+pr+'" fill="#1b1230"/><ellipse cx="'+(70+e.lx)+'" cy="'+(51+e.ly)+'" rx="2.6" ry="'+pr+'" fill="#1b1230"/>';}
+ var brows='<line x1="43" y1="'+by+'" x2="57" y2="'+by+'" stroke="'+hr+'" stroke-width="3.2" stroke-linecap="round" transform="rotate('+e.b+' 50 '+by+')"/><line x1="63" y1="'+by+'" x2="77" y2="'+by+'" stroke="'+hr+'" stroke-width="3.2" stroke-linecap="round" transform="rotate('+(-e.b)+' 70 '+by+')"/>';
+ var mouth='<path transform="translate(60 52)" d="'+e.m+'" stroke="#3b1c1c" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="'+(e.mf?'#7a2230':'none')+'"/>';
+ var blush=e.blush?'<ellipse cx="42" cy="62" rx="5" ry="3" fill="#ff6b81" opacity=".35"/><ellipse cx="78" cy="62" rx="5" ry="3" fill="#ff6b81" opacity=".35"/>':'';
+ var sweat=e.sweat?'<path d="M86 34 q5 8 0 12 q-5 -4 0 -12z" fill="#74c0fc"/>':'';
+ return '<svg viewBox="0 0 120 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="'+esc(c.name)+', ekspresi '+ex+'">'+back+
+ '<path d="M18 150 Q18 102 60 100 Q102 102 102 150 Z" fill="'+sh+'"/>'+armsSVG(e.arms,sd,sk)+
+ '<rect x="53" y="76" width="14" height="26" rx="6" fill="'+skd+'"/><path d="M52 100 L60 116 L68 100Z" fill="#fff" opacity=".88"/>'+
+ '<g transform="translate(0 '+e.dy+') rotate('+e.tilt+' 60 80)"><circle cx="33" cy="54" r="5" fill="'+sk+'"/><circle cx="87" cy="54" r="5" fill="'+sk+'"/><circle cx="60" cy="52" r="27" fill="'+sk+'"/>'+front+blush+eyes+brows+'<path d="M60 56 Q58 60 61 61" stroke="'+skd+'" stroke-width="1.8" fill="none" stroke-linecap="round"/>'+mouth+sweat+'</g></svg>';
+}
+
+/* ================= AUDIO (Web Audio API only) ================= */
+var SND=(function(){
+ var ctx=null,master,bgmBus,sfxBus,muff,delayN,noise,timer=null,nextT=0,step=0,muted=false;
+ var BPM=76,EIGHTH=60/BPM/2;
+ var mtof=function(m){return 440*Math.pow(2,(m-69)/12)};
+ var CHORDS=[[48,52,55,59],[45,48,52,55],[50,53,57,60],[43,47,50,53]];
+ var ROOTS=[36,33,38,31];
+ var PENTA=[72,74,76,79,81,84];
+ function apply(){if(bgmBus)bgmBus.gain.setTargetAtTime(muted?0:0.55,ctx.currentTime,0.05)}
+ function init(){
+  if(ctx){if(ctx.state==='suspended')ctx.resume();return}
+  var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+  try{ctx=new AC()}catch(e){ctx=null;return}
+  master=ctx.createGain();master.gain.value=0.9;master.connect(ctx.destination);
+  var lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2400;lp.connect(master);
+  bgmBus=ctx.createGain();bgmBus.gain.value=muted?0:0.55;bgmBus.connect(lp);
+  delayN=ctx.createDelay(1);delayN.delayTime.value=EIGHTH*3;
+  var fb=ctx.createGain();fb.gain.value=0.3;delayN.connect(fb);fb.connect(delayN);
+  var dout=ctx.createGain();dout.gain.value=0.3;delayN.connect(dout);dout.connect(bgmBus);
+  sfxBus=ctx.createGain();sfxBus.gain.value=0.6;sfxBus.connect(master);
+  muff=ctx.createBiquadFilter();muff.type='lowpass';muff.frequency.value=900;muff.connect(sfxBus);
+  noise=ctx.createBuffer(1,ctx.sampleRate,ctx.sampleRate);
+  var d=noise.getChannelData(0);for(var i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+  startBGM();
+ }
+ function rhodes(m,t,dur,vel){
+  var f=mtof(m),o1=ctx.createOscillator(),o2=ctx.createOscillator(),g=ctx.createGain(),g2=ctx.createGain();
+  o1.type='triangle';o2.type='sine';o1.frequency.value=f;o2.frequency.value=f*2;o1.detune.value=4;g2.gain.value=0.25;
+  o1.connect(g);o2.connect(g2);g2.connect(g);
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vel,t+0.02);g.gain.exponentialRampToValueAtTime(vel*0.45,t+0.4);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  g.connect(bgmBus);o1.start(t);o2.start(t);o1.stop(t+dur+0.05);o2.stop(t+dur+0.05);
+ }
+ function bass(m,t,dur){
+  var o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=mtof(m);
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.17,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g);g.connect(bgmBus);o.start(t);o.stop(t+dur+0.05);
+ }
+ function kick(t){
+  var o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.setValueAtTime(120,t);o.frequency.exponentialRampToValueAtTime(45,t+0.16);
+  g.gain.setValueAtTime(0.3,t);g.gain.exponentialRampToValueAtTime(0.0001,t+0.2);
+  o.connect(g);g.connect(bgmBus);o.start(t);o.stop(t+0.25);
+ }
+ function nz(t,type,freq,vol,dur){
+  var s=ctx.createBufferSource(),f=ctx.createBiquadFilter(),g=ctx.createGain();
+  s.buffer=noise;f.type=type;f.frequency.value=freq;
+  g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  s.connect(f);f.connect(g);g.connect(bgmBus);s.start(t,Math.random()*0.5);s.stop(t+dur+0.02);
+ }
+ function melody(m,t){
+  var o=ctx.createOscillator(),g=ctx.createGain();o.type='triangle';o.frequency.value=mtof(m);
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.045,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+EIGHTH*1.8);
+  o.connect(g);g.connect(bgmBus);g.connect(delayN);o.start(t);o.stop(t+EIGHTH*2);
+ }
+ function sched(s,t){
+  var bar=Math.floor(s/8),pos=s%8;
+  if(pos===0)CHORDS[bar].forEach(function(m,i){rhodes(m,t+i*0.012,EIGHTH*7.5,0.05)});
+  if(pos===4)CHORDS[bar].slice(1).forEach(function(m,i){rhodes(m,t+i*0.012,EIGHTH*3.6,0.03)});
+  if(pos===0||pos===5)bass(ROOTS[bar],t,EIGHTH*3);
+  if(pos===0||pos===4)kick(t);
+  if(pos%2===1)nz(t,'highpass',7000,0.03,0.04);
+  if(pos===2||pos===6)nz(t,'bandpass',1800,0.06,0.09);
+  if((pos===1||pos===3||pos===6)&&Math.random()<0.35)melody(PENTA[Math.floor(Math.random()*PENTA.length)],t);
+ }
+ function tick(){
+  if(!ctx)return;
+  if(nextT<ctx.currentTime-0.2)nextT=ctx.currentTime+0.05;
+  while(nextT<ctx.currentTime+0.35){sched(step%32,nextT);nextT+=EIGHTH;step++}
+ }
+ function startBGM(){if(timer||!ctx)return;nextT=ctx.currentTime+0.1;step=0;timer=setInterval(tick,100)}
+ function tone(type,f,t,dur,vel,dest,f2){
+  var o=ctx.createOscillator(),g=ctx.createGain();o.type=type;o.frequency.setValueAtTime(f,t);
+  if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+dur);
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vel,t+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g);g.connect(dest||sfxBus);o.start(t);o.stop(t+dur+0.05);
+ }
+ function ok(){return ctx&&ctx.state!=='closed'}
+ var api={
+  init:init,
+  toggle:function(){muted=!muted;apply();return muted},
+  isMuted:function(){return muted},
+  suspend:function(){if(ctx&&ctx.state==='running')ctx.suspend()},
+  resume:function(){if(ctx&&ctx.state==='suspended')ctx.resume()},
+  pop:function(){if(!ok())return;tone('sine',520,ctx.currentTime,0.09,0.25,null,880)},
+  hover:function(){if(!ok())return;tone('sine',700,ctx.currentTime,0.04,0.06)},
+  good:function(){if(!ok())return;var t=ctx.currentTime;[523.25,659.25,783.99,1046.5].forEach(function(f,i){tone('triangle',f,t+i*0.085,0.3,0.3)})},
+  meh:function(){if(!ok())return;var t=ctx.currentTime;tone('sine',140,t,0.2,0.45,null,50);tone('triangle',311,t+0.03,0.22,0.14);tone('triangle',247,t+0.17,0.28,0.14)},
+  bad:function(){if(!ok())return;var t=ctx.currentTime;tone('sawtooth',196,t,0.4,0.2,muff);tone('sawtooth',207.65,t,0.4,0.2,muff);tone('sawtooth',165,t+0.22,0.35,0.16,muff);tone('sine',110,t,0.28,0.4,null,55)},
+  badge:function(){if(!ok())return;var t=ctx.currentTime;[659.25,783.99,987.77,1318.5].forEach(function(f,i){tone('triangle',f,t+i*0.09,0.4,0.28)});tone('sine',1318.5,t+0.4,0.6,0.12)},
+  fanfare:function(){if(!ok())return;var t=ctx.currentTime;
+   [[523.25,0],[659.25,.12],[783.99,.24],[1046.5,.38]].forEach(function(n){tone('triangle',n[0],t+n[1],0.4,0.3);tone('sawtooth',n[0],t+n[1],0.3,0.05,muff)});
+   [523.25,659.25,783.99,1046.5].forEach(function(f){tone('triangle',f,t+0.55,1.1,0.16)})}
+ };
+ return api;
+})();
+
+/* ================= UI HELPERS ================= */
+var stage=$('#stage');
+function go(id){
+ var cur=$('.screen.active'),nxt=$('#'+id);if(!nxt||cur===nxt)return;
+ if(cur){cur.classList.add('leaving');setTimeout(function(){cur.classList.remove('active','leaving');nxt.classList.add('active');window.scrollTo(0,0)},200)}
+ else{nxt.classList.add('active')}
+}
+function syncMute(){
+ var m=SND.isMuted();
+ $$('[data-mute]').forEach(function(b){
+  $('.mi',b).textContent=m?'🔇':'🔊';
+  b.setAttribute('aria-pressed',m?'true':'false');
+  b.setAttribute('aria-label',m?'Nyalakan musik latar':'Matikan musik latar');
+ });
+}
+function toast(ic,title,desc){
+ var el=document.createElement('div');el.className='toast';
+ el.innerHTML='<div class="ti">'+ic+'</div><div><b>'+esc(title)+'</b><span>'+esc(desc)+'</span></div>';
+ $('#toasts').appendChild(el);
+ setTimeout(function(){el.classList.add('out')},3800);
+ setTimeout(function(){el.remove()},4300);
+}
+function setScore(v){
+ var el=$('#hudScore'),from=S.shownScore||0,t0=performance.now();S.shownScore=v;
+ el.classList.remove('bump');void el.offsetWidth;el.classList.add('bump');
+ (function f(t){var k=Math.min(1,(t-t0)/600);el.textContent=Math.round(from+(v-from)*k);if(k<1)requestAnimationFrame(f)})(t0);
+}
+function setProgress(p){
+ $('#progFill').style.width=p+'%';$('#progPct').textContent=Math.round(p)+'%';$('#progBar').setAttribute('aria-valuenow',Math.round(p));
+}
+function updMeters(){
+ ['trust','clarity','calm'].forEach(function(k){
+  var el=$('.meter[data-m="'+k+'"]'),v=S.meters[k];
+  $('.m-val',el).textContent=v;$('.bar-fill',el).style.width=v+'%';el.classList.toggle('low',v<35);
+ });
+}
+function updHUD(){$('#hudName').textContent=S.name;$('#hudScore').textContent=S.score;S.shownScore=S.score;updMeters()}
+function renderBadges(){
+ $('#badgeStrip').innerHTML=Object.keys(BADGES).map(function(k){var b=BADGES[k];return '<span class="bchip'+(S.badges.has(k)?' on':'')+'" title="'+esc(b.desc)+'">'+b.ic+' '+b.name+'</span>'}).join('');
+}
+function unlockBadge(k,silent){
+ if(S.badges.has(k))return;S.badges.add(k);renderBadges();
+ if(!silent){var b=BADGES[k];toast(b.ic,'Lencana Terbuka: '+b.name,b.desc);SND.badge()}
+}
+function deltaChips(fx){return Object.keys(fx).map(function(k){var d=fx[k];return '<span class="dchip '+(d>0?'up':d<0?'down':'')+'">'+MET[k][0]+' '+MET[k][1]+' '+(d>0?'+':'')+d+'</span>'}).join('')}
+function beatHTML(b,react){
+ var c=CH[b.who],me=b.who==='me';
+ var nm=me?esc(S.name||'Kamu'):c.name,role=me?'Koordinator Proyek (kamu)':c.role;
+ return '<div class="beat'+(react?' react':'')+(me?' me':'')+'"><div class="av">'+avatarSVG(c,b.expr)+'</div><div class="beat-body"><div class="who"><strong>'+nm+'</strong><span class="role">'+role+'</span></div>'+
+ (b.say?'<div class="bubble">'+fmt(b.say)+'</div>':'')+
+ '<div class="tags-nv"><span class="nv">[Sinyal Nonverbal: '+b.nv+']</span>'+(b.pv?'<span class="pv">[Paraverbal: '+b.pv+']</span>':'')+'</div></div></div>';
+}
+
+/* ================= GAME FLOW ================= */
+function startGame(){
+ resetState();CH.me.name=S.name;updHUD();renderBadges();setProgress(0);
+ go('scr-game');showChapterIntro(0);
+}
+function showChapterIntro(i){
+ var sc=SCEN[i],c=CHAPTERS[sc.ch];
+ stage.innerHTML='<article class="card chapter-card anim-in"><div class="big">'+c.ic+'</div><span class="ch-no">Bab '+sc.ch+' · '+c.scen+'</span><h2>'+c.title+'</h2><p>'+c.sub+'</p><div class="focus-tags">'+c.focus.map(function(f){return '<span class="tag">'+f+'</span>'}).join('')+'</div><button type="button" class="btn primary" id="btnBegin">Mulai Bab '+sc.ch+' ➜</button></article>';
+ $('#btnBegin').onclick=function(){showScenario(i)};
+}
+function showScenario(i){
+ S.idx=i;S.locked=false;
+ var sc=SCEN[i],order=shuffle([0,1,2]),letters=['A','B','C'];S.order[i]=order;
+ stage.innerHTML='<article class="card scenario anim-in" id="scCard">'+
+ '<div class="sc-meta"><span class="pill pill-ch">Bab '+sc.ch+'</span><span class="pill">Skenario '+(i+1)+' dari 5</span><span class="pill pill-tag">'+sc.tag+'</span></div>'+
+ '<h2 class="sc-title">'+sc.title+'</h2><p class="narr">'+fmt(sc.narr)+'</p>'+
+ '<div class="beats">'+sc.beats.map(function(b){return beatHTML(b)}).join('')+'</div>'+
+ '<button type="button" class="hint-btn" id="hintBtn" aria-expanded="false" aria-controls="hintBox">💡 Hint Teori</button>'+
+ '<div class="hint-box" id="hintBox" hidden>'+fmt(sc.hint)+'</div>'+
+ '<h3 class="ask">Apa yang akan kamu lakukan?</h3>'+
+ '<div class="choices" id="choices" role="group" aria-label="Pilihan respons">'+
+ order.map(function(ci,k){return '<button type="button" class="choice" data-ci="'+ci+'"><span class="ltr">'+letters[k]+'</span><span class="ctext"><span class="ct">'+fmt(sc.choices[ci].text)+'</span><span class="reveal"></span></span></button>'}).join('')+
+ '</div><div id="reaction" aria-live="polite"></div></article>';
+ var opened=false;
+ $('#hintBtn').onclick=function(){
+  var box=$('#hintBox'),show=box.hidden;box.hidden=!show;this.setAttribute('aria-expanded',show?'true':'false');
+  if(show&&!opened){opened=true;S.hints++}
+ };
+ $$('.choice').forEach(function(b){b.addEventListener('click',function(){pick(i,+b.dataset.ci)})});
+}
+function pick(i,ci){
+ if(S.locked)return;S.locked=true;
+ var sc=SCEN[i],c=sc.choices[ci];
+ var cls=c.pts===200?'ok':c.pts===100?'meh':'bad';
+ if(c.pts===200)SND.good();else if(c.pts===100)SND.meh();else SND.bad();
+ S.score+=c.pts;setScore(S.score);
+ Object.keys(c.fx).forEach(function(k){S.meters[k]=clamp(S.meters[k]+c.fx[k],0,100)});updMeters();
+ S.answers[i]={choice:ci,pts:c.pts};
+ setProgress((i+1)/5*100);
+ var box=$('#choices');box.classList.add('revealed');
+ $$('.choice').forEach(function(b){
+  var k=+b.dataset.ci,cc=sc.choices[k],kc=cc.pts===200?'ok':cc.pts===100?'meh':'bad';
+  b.disabled=true;
+  $('.reveal',b).innerHTML='<span class="rv rv-'+kc+'">'+cc.style+' · +'+cc.pts+' poin</span>';
+  if(k===ci)b.classList.add('sel-'+cls);else b.classList.add('dim');
+ });
+ if(c.pts===0){var card=$('#scCard');card.classList.remove('anim-in');card.classList.add('shake')}
+ var verdict=c.pts===200?'✅ Pilihan Optimal':c.pts===100?'🟡 Perlu Ditingkatkan':'🔴 Kontraproduktif';
+ $('#reaction').innerHTML='<div class="rx anim-in"><h3 class="rx-title">Reaksi di Ruangan</h3><div class="beats">'+c.react.map(function(b){return beatHTML(b,true)}).join('')+'</div>'+
+ '<div class="feedback fb-'+cls+'"><div class="fb-head"><span>'+verdict+'</span><span>+'+c.pts+' poin</span></div><div class="fb-style">Gaya komunikasi: <strong>'+c.style+'</strong></div>'+
+ '<p class="fb-why"><strong>Mengapa?</strong> '+fmt(c.why)+'</p>'+
+ (c.pts<200?'<p class="fb-opt"><strong>Yang lebih tepat:</strong> '+sc.best+'</p>':'')+
+ '<div class="tags">'+c.tags.map(function(t){return '<span class="tag">'+t+'</span>'}).join('')+'</div><div class="deltas">'+deltaChips(c.fx)+'</div></div>'+
+ '<div class="next-row"><button type="button" class="btn primary" id="btnNext">'+(i<4?'Lanjut ➜':'Lihat Hasil Akhir 🏁')+'</button></div></div>';
+ $('#btnNext').onclick=function(){
+  if(i<4){var n=i+1;if(CH_START.indexOf(n)>-1)showChapterIntro(n);else showScenario(n);window.scrollTo({top:0,behavior:'smooth'})}
+  else finish();
+ };
+ setTimeout(function(){var r=$('#reaction');if(r)r.scrollIntoView({behavior:'smooth',block:'start'})},250);
+ // badges
+ setTimeout(function(){
+  if(i===1&&S.answers[0].pts+S.answers[1].pts>=300)unlockBadge('bridge');
+  if(i===2&&S.meters.calm>=70)unlockBadge('zen');
+  if(i===3&&c.pts===200)unlockBadge('empathy');
+  if(i===4&&c.pts===200)unlockBadge('safe');
+ },900);
+}
+
+/* ================= DEBRIEF ================= */
+function computeEnding(){
+ var pct=S.score/10,minM=Math.min(S.meters.trust,S.meters.clarity,S.meters.calm);
+ if(pct>=80&&minM>=60)return 'A';
+ if(pct>=50)return 'B';
+ return 'C';
+}
+function compResults(){
+ return OBJ.map(function(o){
+  var vals=o.from.map(function(ix){return S.answers[ix].pts/200});
+  var v=Math.round(vals.reduce(function(a,b){return a+b},0)/vals.length*100);
+  return {o:o,v:v,lvl:v>=80?'Mahir':v>=50?'Berkembang':'Perlu Latihan'};
+ });
+}
+function buildSummary(pct,endKey,comp){
+ var L=[];
+ L.push('[Bridge the Gap: Cross-Dept Dialogue]');
+ L.push('Nama Peserta : '+S.name);
+ L.push('Skor         : '+S.score+' / 1000 ('+pct+'%)');
+ L.push('Status       : '+(pct>=80?'TUNTAS (target ≥ 80% tercapai)':'BELUM TUNTAS (target 80%)'));
+ L.push('Ending       : '+ENDINGS[endKey].title);
+ L.push('Meter Akhir  : Trust & Safety '+S.meters.trust+' | Clarity & Alignment '+S.meters.clarity+' | Emotional Composure '+S.meters.calm);
+ L.push('Kompetensi   : '+comp.map(function(c){return c.o.title+' '+c.v+'%'}).join('; '));
+ var bd=Array.from(S.badges).map(function(k){return BADGES[k].name});
+ L.push('Lencana      : '+(bd.length?bd.join(', '):'-'));
+ L.push('Hint dipakai : '+S.hints+'x');
+ L.push('Keputusan    : '+SCEN.map(function(s,i){var a=S.answers[i];return 'S'+(i+1)+' '+(a.pts===200?'Optimal':a.pts===100?'Parsial':'Kontraproduktif')+' (+'+a.pts+')'}).join(' | '));
+ L.push('Waktu        : '+new Date().toLocaleString('id-ID'));
+ return L.join('\n');
+}
+function copyText(txt){
+ if(navigator.clipboard&&navigator.clipboard.writeText){return navigator.clipboard.writeText(txt).then(function(){return true},function(){return fallbackCopy(txt)})}
+ return Promise.resolve(fallbackCopy(txt));
+}
+function fallbackCopy(txt){
+ var ta=document.createElement('textarea');ta.value=txt;ta.setAttribute('readonly','');ta.style.cssText='position:fixed;opacity:0;top:0;left:0';
+ document.body.appendChild(ta);ta.select();var ok=false;try{ok=document.execCommand('copy')}catch(e){ok=false}ta.remove();return ok;
+}
+function finish(){
+ var pct=Math.round(S.score/10),endKey=computeEnding(),E=ENDINGS[endKey],comp=compResults();
+ if(pct>=80)unlockBadge('master',true);
+ var summary=buildSummary(pct,endKey,comp);
+ var weakest=comp.slice().sort(function(a,b){return a.v-b.v})[0];
+ var msg=pct>=80
+  ?'Selamat, '+esc(S.name)+'! Kamu mencapai target ≥ 80%. Cara kamu menyeimbangkan ketegasan dan kehangatan menunjukkan kesiapan memimpin dialog lintas departemen. Pertahankan kebiasaan ini di dunia nyata: jeda sebelum bereaksi, rangkum fakta, dan buka ruang bagi suara timmu.'
+  :'Kamu sudah melangkah di jalur yang tepat, '+esc(S.name)+'. Skormu '+pct+'% dan targetnya 80%. Fokus berikutnya pada <strong>'+weakest.o.title+'</strong>: '+weakest.o.tip+' Coba Replay dan lihat bagaimana pilihan berbeda mengubah reaksi tim. Setiap percobaan melatih refleks komunikasimu.';
+ var bar=function(k){return '<div class="meter" data-m="'+k+'"><div class="meter-head"><span class="m-ic">'+MET[k][0]+'</span><span class="m-val">'+S.meters[k]+'</span></div><span class="m-name">'+MET[k][1]+'</span><div class="bar"><div class="bar-fill" style="width:'+S.meters[k]+'%"></div></div></div>'};
+ var faces=E.faces.map(function(f){var c=f[0]==='me'?CH.me:CH[f[0]];return '<div class="av">'+avatarSVG(c,f[1])+'</div>'}).join('');
+ var compHTML=comp.map(function(c){return '<div class="comp"><div class="comp-top"><span class="ic">'+c.o.ic+'</span><strong>'+c.o.title+'</strong></div><div class="comp-val"><span>'+c.lvl+'</span><b>'+c.v+'%</b></div><div class="bar"><div class="bar-fill" style="width:'+c.v+'%"></div></div>'+(c.v<80?'<div class="tip">💡 '+c.o.tip+'</div>':'')+'</div>'}).join('');
+ var badgeHTML=Object.keys(BADGES).map(function(k){var b=BADGES[k];return '<div class="bcard'+(S.badges.has(k)?' on':'')+'"><span class="ic">'+b.ic+'</span><div><strong>'+b.name+'</strong><small>'+b.desc+'</small></div></div>'}).join('');
+ var logHTML=SCEN.map(function(sc,i){
+  var a=S.answers[i],c=sc.choices[a.choice],best=sc.choices.filter(function(x){return x.pts===200})[0],okk=a.pts===200;
+  return '<details class="rv-item"><summary><span class="rv-n">'+(i+1)+'</span><span class="rv-t">'+sc.title+'</span><span class="rv-s '+(okk?'st-ok':'st-no')+'">'+(okk?'Optimal':'Perlu Ditingkatkan')+'</span><span class="chev">▾</span></summary><div class="rv-body">'+
+  '<div class="rv-box"><h4>Pilihanmu · '+c.style+' · +'+a.pts+' poin</h4>'+fmt(c.text)+'</div>'+
+  '<div class="rv-box"><h4>Penjelasan teori</h4>'+fmt(c.why)+'</div>'+
+  (okk?'':'<div class="rv-box best"><h4>Pilihan optimal</h4>'+fmt(best.text)+'<br><br><strong>Mengapa optimal:</strong> '+fmt(best.why)+'</div>')+
+  '</div></details>';
+ }).join('');
+ $('#scr-debrief').innerHTML='<div class="app">'+
+ '<div class="topbar"><div class="brand"><span class="brand-dot"></span>Debrief Misi</div><button type="button" class="icon-btn" data-mute aria-pressed="false" aria-label="Matikan musik latar"><span class="mi">🔊</span><span class="ml">Musik</span></button></div>'+
+ '<section class="card ending '+endKey+'"><div class="end-faces">'+faces+'</div><div class="end-kicker">Hasil misi untuk '+esc(S.name)+'</div><h2 class="end-title">'+E.ic+' '+E.title+'</h2><p class="end-text">'+E.text+'</p>'+
+ '<div class="stat-grid"><div class="stat"><b>'+S.score+'</b><span>Skor / 1000</span></div><div class="stat"><b>'+pct+'%</b><span>Pencapaian</span></div><div class="stat"><b>'+(pct>=80?'Tuntas ✅':'Belum ⏳')+'</b><span>Target ≥ 80%</span></div></div>'+
+ '<div class="final-meters">'+bar('trust')+bar('clarity')+bar('calm')+'</div></section>'+
+ '<section class="card"><h3>🎓 Rapor 4 Tujuan Pembelajaran</h3><div class="grid2">'+compHTML+'</div></section>'+
+ '<section class="card"><h3>🏅 Koleksi Lencana ('+S.badges.size+'/5)</h3><div class="bgrid">'+badgeHTML+'</div></section>'+
+ '<section class="card"><h3>📝 Log Review Keputusan</h3>'+logHTML+'</section>'+
+ '<section class="card reinforce"><h3>🌟 Umpan Balik untuk Kamu</h3><p>'+msg+'</p>'+
+ '<div class="btn-row"><button type="button" class="btn primary" id="btnReplay">🔁 Main Ulang Skenario (Replay)</button><button type="button" class="btn" id="btnCopy">📋 Salin Ringkasan Skor LMS</button></div>'+
+ '<div class="copy-status" id="copyStatus" role="status"></div>'+
+ '<details><summary style="cursor:pointer;color:var(--muted)">Lihat teks ringkasan</summary><textarea class="lms-box" id="lmsBox" readonly></textarea></details></section></div>';
+ $('#lmsBox').value=summary;
+ $('#btnReplay').onclick=function(){startGame()};
+ $('#btnCopy').onclick=function(){copyText(summary).then(function(ok){$('#copyStatus').textContent=ok?'✅ Ringkasan skor berhasil disalin.':'Salin otomatis gagal. Buka “Lihat teks ringkasan” lalu salin manual.'})};
+ syncMute();go('scr-debrief');
+ setTimeout(function(){SND.fanfare()},350);
+ if(S.badges.has('master'))setTimeout(function(){var b=BADGES.master;toast(b.ic,'Lencana Terbuka: '+b.name,b.desc)},700);
+}
+
+/* ================= WIRING ================= */
+['pointerdown','keydown','touchstart'].forEach(function(ev){document.addEventListener(ev,function(){SND.init()},{passive:true})});
+document.addEventListener('visibilitychange',function(){if(document.hidden)SND.suspend();else SND.resume()});
+document.addEventListener('click',function(e){
+ var m=e.target.closest('[data-mute]');
+ if(m){SND.init();SND.toggle();syncMute();return}
+ if(e.target.closest('.btn,.icon-btn,.hint-btn'))SND.pop();
+});
+var lastHover=null;
+var HSEL='.btn,.choice,.icon-btn,.hint-btn';
+document.addEventListener('mouseover',function(e){
+ var el=e.target.closest&&e.target.closest(HSEL);
+ if(el&&!el.disabled&&el!==lastHover&&!(e.relatedTarget&&el.contains(e.relatedTarget))){lastHover=el;SND.hover()}
+});
+document.addEventListener('mouseout',function(e){
+ var el=e.target.closest&&e.target.closest(HSEL);
+ if(el&&el===lastHover&&!(e.relatedTarget&&el.contains(e.relatedTarget)))lastHover=null;
+});
+$('#nameForm').addEventListener('submit',function(e){
+ e.preventDefault();
+ var v=$('#nameInput').value.replace(/\s+/g,' ').trim(),f=$('#nameField'),err=$('#nameErr');
+ var okName=/^[\p{L}\p{N} .'\-]{2,30}$/u.test(v);
+ if(!okName){f.classList.add('bad');err.textContent=v.length<2?'Nama wajib diisi (minimal 2 karakter) sebelum memulai misi.':'Gunakan huruf, angka, spasi, titik, apostrof, atau tanda hubung (maks. 30 karakter).';$('#nameInput').focus();SND.bad();return}
+ f.classList.remove('bad');err.textContent='';
+ S.name=v;$('#briefName').textContent=v;go('scr-brief');
+});
+$('#nameInput').addEventListener('input',function(){$('#nameField').classList.remove('bad');$('#nameErr').textContent=''});
+$('#btnStart').addEventListener('click',startGame);
+// hero art
+$('#heroArt').innerHTML='<div class="av">'+avatarSVG(CH.bram,'tense')+'</div><div class="gap-bridge"><span>🌉</span></div><div class="av">'+avatarSVG(CH.sinta,'collab')+'</div>';
+// HUD height for scroll margin
+(function(){
+ var hud=$('#hud');
+ function setH(){document.documentElement.style.setProperty('--hud-h',(hud.offsetHeight||170)+'px')}
+ if(window.ResizeObserver){new ResizeObserver(setH).observe(hud)}
+ window.addEventListener('resize',setH);setH();
+})();
+syncMute();
+})();
+</script>
+</body>
+</html>
